@@ -1,0 +1,19 @@
+{
+  "pubsubConfigs": [
+    {
+      "name": "Cloudevents Explorer Pubsub Emulator",
+      "emulatorHost": "localhost:8086",
+      "projectId": "tms-suncorp-local",
+      "subscriptionId": "cloudevents.subscription"
+    }
+  ],
+  "kafkaConfigs": [
+    {
+      "name": "EventMesh Unica",
+      "brokers": "localhost:19092",
+      "topic": "unica.marketing.response.events",
+      "consumerGroup": "cloudevents-explorer",
+      "schemaRegistry": "http://localhost:18081"
+    }
+  ]
+}
