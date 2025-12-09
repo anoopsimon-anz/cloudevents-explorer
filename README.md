@@ -1,9 +1,10 @@
-# 📡 CloudEvents Explorer
+# 📡 Testing Studio (CloudEvents Explorer)
 
-A Redpanda Console-inspired web tool for exploring Google Cloud PubSub CloudEvents with beautiful dark mode UI and message persistence.
+A professional, modular web tool for exploring and testing Kafka and Google Cloud PubSub messages with Avro schema support, message publishing, and comprehensive flow diagrams.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![Go](https://img.shields.io/badge/go-1.21+-00ADD8?logo=go)
+![Architecture](https://img.shields.io/badge/architecture-modular-green)
 
 ## ✨ Features
 
@@ -39,10 +40,39 @@ A Redpanda Console-inspired web tool for exploring Google Cloud PubSub CloudEven
 
 ```bash
 cd ~/scratches/cloudevents-explorer
-go run main.go
+
+# Option 1: Use the quick start script
+./start.sh
+
+# Option 2: Run directly
+go run cmd/server/main.go
+
+# Option 3: Build and run
+go build -o testing-studio cmd/server/main.go
+./testing-studio
 ```
 
 Open http://localhost:8888 in your browser.
+
+## 🏗️ Architecture
+
+This project has been refactored from a monolithic `main.go` into a clean, maintainable modular architecture:
+
+```
+testing-studio/
+├── cmd/server/main.go          # Application entry point
+├── internal/
+│   ├── config/                 # Configuration management
+│   ├── handlers/               # HTTP request handlers
+│   ├── kafka/                  # Kafka operations (pull, publish, Avro)
+│   ├── pubsub/                 # PubSub operations
+│   ├── templates/              # HTML templates and UI
+│   └── types/                  # Shared data structures
+├── go.mod
+└── README.md
+```
+
+For detailed architecture documentation, see [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ## 🎯 Why This Tool?
 

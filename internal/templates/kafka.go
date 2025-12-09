@@ -1,0 +1,231 @@
+package templates
+
+const KafkaContent = `<div class="panel">
+    <div class="panel-header">
+        <div class="panel-title">Kafka Connection Settings</div>
+    </div>
+    <div class="panel-body">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Saved Configurations</label>
+                <select id="configSelect" onchange="loadSelectedConfig()">
+                    <option value="">-- Select Configuration --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Configuration Name</label>
+                <input type="text" id="configName" placeholder="e.g., TMS Unica Local">
+            </div>
+            <div class="form-group">
+                <label>Brokers</label>
+                <input type="text" id="brokers" placeholder="localhost:19092">
+            </div>
+            <div class="form-group">
+                <label>Topic</label>
+                <input type="text" id="topic" placeholder="unica.marketing.response.events">
+            </div>
+            <div class="form-group">
+                <label>Consumer Group</label>
+                <input type="text" id="consumerGroup" placeholder="cloudevents-explorer">
+            </div>
+            <div class="form-group">
+                <label>Schema Registry (optional)</label>
+                <input type="text" id="schemaRegistry" placeholder="http://localhost:18081">
+            </div>
+            <div class="form-group">
+                <label>Max Messages</label>
+                <input type="number" id="maxMessages" value="20" min="1" max="100">
+            </div>
+        </div>
+        <div class="button-group">
+            <button class="btn-primary" onclick="pullMessages()">Pull Messages</button>
+            <button class="btn-primary" onclick="openPublishModal()" style="background: #188038; border-color: #188038;">Publish Message</button>
+            <button class="btn-secondary" onclick="saveConfiguration()">Save Config</button>
+            <button class="btn-secondary" onclick="refreshConfigs()">Refresh</button>
+            <button class="btn-danger" onclick="clearAllMessages()">Clear All</button>
+        </div>
+    </div>
+</div>
+
+<div id="publishModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 8px; max-width: 700px; width: 90%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="padding: 20px; border-bottom: 1px solid #dadce0; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 20px; font-weight: 500; color: #202124;">Publish Kafka Message</h2>
+            <button onclick="closePublishModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #5f6368;">&times;</button>
+        </div>
+        <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
+            <label style="font-size: 13px; color: #5f6368; font-weight: 500; margin-bottom: 8px;">Message JSON:</label>
+            <textarea id="publishMessageJson" style="flex: 1; font-family: 'Monaco', monospace; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; padding: 12px; resize: none;" placeholder='{"header": {...}, "marketingResponse": {...}}'></textarea>
+            <div style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 4px; font-size: 12px; color: #5f6368;">
+                <div>Topic: <strong id="publishTopic">-</strong></div>
+                <div>Schema Registry: <strong id="publishSchema">-</strong></div>
+            </div>
+            <button onclick="publishMessage()" style="margin-top: 12px; background: #188038; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500;">Publish to Kafka</button>
+        </div>
+    </div>
+</div>`
+
+const KafkaJS = `async function refreshConfigs() {
+    const response = await fetch('/api/configs');
+    const data = await response.json();
+    const select = document.getElementById('configSelect');
+    select.innerHTML = '<option value="">-- Select Configuration --</option>';
+    data.kafkaConfigs.forEach((config, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = config.name;
+        select.appendChild(option);
+    });
+}
+
+function loadSelectedConfig() {
+    const select = document.getElementById('configSelect');
+    if (select.value === '') return;
+    fetch('/api/configs')
+        .then(res => res.json())
+        .then(data => {
+            const config = data.kafkaConfigs[parseInt(select.value)];
+            document.getElementById('configName').value = config.name;
+            document.getElementById('brokers').value = config.brokers;
+            document.getElementById('topic').value = config.topic;
+            document.getElementById('consumerGroup').value = config.consumerGroup;
+            document.getElementById('schemaRegistry').value = config.schemaRegistry || '';
+        });
+}
+
+async function saveConfiguration() {
+    const config = {
+        name: document.getElementById('configName').value,
+        brokers: document.getElementById('brokers').value,
+        topic: document.getElementById('topic').value,
+        consumerGroup: document.getElementById('consumerGroup').value,
+        schemaRegistry: document.getElementById('schemaRegistry').value
+    };
+    if (!config.name || !config.brokers || !config.topic || !config.consumerGroup) {
+        showStatus('Please fill in required fields', true);
+        return;
+    }
+    const response = await fetch('/api/kafka/configs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+    });
+    if (response.ok) {
+        showStatus('Configuration saved successfully');
+        refreshConfigs();
+    } else {
+        showStatus('Failed to save configuration', true);
+    }
+}
+
+async function pullMessages() {
+    const messagesDiv = document.getElementById('messages');
+    messagesDiv.innerHTML = '<div class="loading"><div class="spinner"></div>Pulling messages from Kafka...</div>';
+    const baseConsumerGroup = document.getElementById('consumerGroup').value;
+    const uniqueConsumerGroup = baseConsumerGroup + '-' + Date.now();
+    const params = {
+        brokers: document.getElementById('brokers').value,
+        topic: document.getElementById('topic').value,
+        consumerGroup: uniqueConsumerGroup,
+        schemaRegistry: document.getElementById('schemaRegistry').value,
+        maxMessages: parseInt(document.getElementById('maxMessages').value)
+    };
+    if (!params.brokers || !params.topic || !baseConsumerGroup) {
+        messagesDiv.innerHTML = '<div class="empty-state"><div>Please fill in all required fields</div></div>';
+        return;
+    }
+    try {
+        const response = await fetch('/api/kafka/pull', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Failed to pull messages');
+        messagesData = data.messages.concat(messagesData);
+        renderMessages();
+        showStatus('Pulled ' + data.messages.length + ' new message(s) from Kafka');
+    } catch (error) {
+        messagesDiv.innerHTML = '<div class="empty-state"><div>Error: ' + error.message + '</div></div>';
+        showStatus('Failed to pull messages: ' + error.message, true);
+    }
+}
+
+function openPublishModal() {
+    const topic = document.getElementById('topic').value;
+    const schemaRegistry = document.getElementById('schemaRegistry').value;
+
+    if (!topic) {
+        showStatus('Please configure topic first', true);
+        return;
+    }
+
+    document.getElementById('publishTopic').textContent = topic;
+    document.getElementById('publishSchema').textContent = schemaRegistry || 'Not configured';
+    document.getElementById('publishModal').style.display = 'flex';
+}
+
+function closePublishModal() {
+    document.getElementById('publishModal').style.display = 'none';
+    document.getElementById('publishMessageJson').value = '';
+}
+
+async function publishMessage() {
+    const jsonInput = document.getElementById('publishMessageJson').value.trim();
+
+    if (!jsonInput) {
+        showStatus('Please enter message JSON', true);
+        return;
+    }
+
+    let messageData;
+    try {
+        messageData = JSON.parse(jsonInput);
+    } catch (e) {
+        showStatus('Invalid JSON: ' + e.message, true);
+        return;
+    }
+
+    const params = {
+        brokers: document.getElementById('brokers').value,
+        topic: document.getElementById('topic').value,
+        schemaRegistry: document.getElementById('schemaRegistry').value,
+        message: messageData
+    };
+
+    if (!params.brokers || !params.topic) {
+        showStatus('Please configure brokers and topic first', true);
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/kafka/publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to publish message');
+        }
+
+        showStatus('Message published successfully!');
+        closePublishModal();
+
+        // Auto-pull to show the newly published message
+        setTimeout(function() {
+            pullMessages();
+        }, 500);
+    } catch (error) {
+        showStatus('Failed to publish: ' + error.message, true);
+    }
+}
+
+document.getElementById('publishModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closePublishModal();
+    }
+});
+
+refreshConfigs();`

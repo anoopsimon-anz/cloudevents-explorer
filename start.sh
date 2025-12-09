@@ -1,7 +1,7 @@
 #!/bin/bash
-# CloudEvents Explorer - Quick Launcher
+# Testing Studio (CloudEvents Explorer) - Quick Launcher
 
-echo "🚀 Starting CloudEvents Explorer..."
+echo "🚀 Starting Testing Studio..."
 echo ""
 echo "📡 Opening http://localhost:8888 in your browser..."
 echo "🛑 Press Ctrl+C to stop the server"
@@ -10,5 +10,5 @@ echo ""
 # Open browser after a short delay
 (sleep 2 && open http://localhost:8888) &
 
-# Start the server
-go run main.go
+# Start the server from new location
+go run cmd/server/main.go
