@@ -48,19 +48,34 @@ const KafkaContent = `<div class="panel">
 </div>
 
 <div id="publishModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: white; border-radius: 8px; max-width: 700px; width: 90%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
-        <div style="padding: 20px; border-bottom: 1px solid #dadce0; display: flex; justify-content: space-between; align-items: center;">
+    <div style="background: white; border-radius: 12px; max-width: 1000px; width: 90%; height: 85vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,0.2);">
+        <div style="padding: 24px; border-bottom: 1px solid #e8eaed; display: flex; justify-content: space-between; align-items: center;">
             <h2 style="font-size: 20px; font-weight: 500; color: #202124;">Publish Kafka Message</h2>
-            <button onclick="closePublishModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #5f6368;">&times;</button>
+            <button onclick="closePublishModal()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #5f6368; line-height: 1; padding: 0; width: 32px; height: 32px;">&times;</button>
         </div>
-        <div style="flex: 1; padding: 20px; display: flex; flex-direction: column; overflow: hidden;">
-            <label style="font-size: 13px; color: #5f6368; font-weight: 500; margin-bottom: 8px;">Message JSON:</label>
-            <textarea id="publishMessageJson" style="flex: 1; font-family: 'Monaco', monospace; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; padding: 12px; resize: none;" placeholder='{"header": {...}, "marketingResponse": {...}}'></textarea>
-            <div style="margin-top: 12px; padding: 12px; background: #f8f9fa; border-radius: 4px; font-size: 12px; color: #5f6368;">
-                <div>Topic: <strong id="publishTopic">-</strong></div>
-                <div>Schema Registry: <strong id="publishSchema">-</strong></div>
+        <div style="flex: 1; padding: 24px; display: flex; flex-direction: column; overflow: hidden;">
+            <div style="margin-bottom: 16px; padding: 12px 16px; background: #e8f0fe; border-left: 4px solid #1a73e8; border-radius: 4px; font-size: 13px; color: #1967d2;">
+                <div style="margin-bottom: 4px;"><strong>Topic:</strong> <span id="publishTopic" style="font-family: monospace;">-</span></div>
+                <div><strong>Schema Registry:</strong> <span id="publishSchema" style="font-family: monospace;">-</span></div>
             </div>
-            <button onclick="publishMessage()" style="margin-top: 12px; background: #188038; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500;">Publish to Kafka</button>
+            <label style="font-size: 14px; color: #202124; font-weight: 500; margin-bottom: 10px;">Message JSON:</label>
+            <textarea id="publishMessageJson" style="flex: 1; font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 14px; line-height: 1.6; border: 1px solid #dadce0; border-radius: 6px; padding: 16px; resize: none; background: #f8f9fa;" placeholder='Paste your JSON message here...
+
+Example:
+{
+  "header": {
+    "messageId": "123",
+    "timestamp": "2024-01-01T00:00:00Z"
+  },
+  "marketingResponse": {
+    "customerId": "456",
+    "responseCode": "SUCCESS"
+  }
+}'></textarea>
+            <div style="display: flex; gap: 12px; margin-top: 16px;">
+                <button onclick="publishMessage()" style="flex: 1; background: #188038; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='#137333'" onmouseout="this.style.background='#188038'">Publish to Kafka</button>
+                <button onclick="closePublishModal()" style="background: #f1f3f4; color: #5f6368; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px; transition: background 0.2s;" onmouseover="this.style.background='#e8eaed'" onmouseout="this.style.background='#f1f3f4'">Cancel</button>
+            </div>
         </div>
     </div>
 </div>`
