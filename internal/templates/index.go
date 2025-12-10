@@ -177,6 +177,13 @@ const Index = `<!DOCTYPE html>
     </style>
 </head>
 <body>
+    <div class="tools-wrapper">
+        <button class="tools-btn" onclick="toggleToolsMenu()">Tools ▼</button>
+        <div class="tools-menu" id="toolsMenu">
+            <a href="/flow-diagram">Flow Diagram</a>
+            <a href="#" onclick="openBase64Tool(); toggleToolsMenu(); return false;">Base64 Encoder/Decoder</a>
+        </div>
+    </div>
     <div class="status-indicators">
         <div class="status-indicator" id="dockerStatus">
             <div class="status-dot red"></div>
@@ -188,19 +195,9 @@ const Index = `<!DOCTYPE html>
         </div>
     </div>
     <div class="landing">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 48px;">
-            <div>
-                <h1>Testing Studio</h1>
-            </div>
-            <div style="position: relative;">
-                <button onclick="toggleToolsMenu()" style="background: white; border: 1px solid #dadce0; padding: 8px 16px; border-radius: 4px; cursor: pointer; color: #5f6368; font-size: 14px; font-weight: 500;">
-                    Tools ▼
-                </button>
-                <div id="toolsMenu" style="display: none; position: absolute; right: 0; top: 40px; background: white; border: 1px solid #dadce0; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); min-width: 200px; z-index: 100;">
-                    <a href="/flow-diagram" style="display: block; padding: 12px 16px; color: #202124; text-decoration: none; border-bottom: 1px solid #dadce0;">Flow Diagram</a>
-                    <a onclick="openBase64Tool(); toggleToolsMenu(); return false;" href="#" style="display: block; padding: 12px 16px; color: #202124; text-decoration: none;">Base64 Encoder/Decoder</a>
-                </div>
-            </div>
+        <div class="hero">
+            <h1>Testing Studio</h1>
+            <p class="subtitle">Requires TMS Suncorp devstack to be running</p>
         </div>
 
         <div class="options">
