@@ -143,8 +143,8 @@ func searchContainerLogs(container, traceID string) []TraceEvent {
 
 			events = append(events, event)
 		} else {
-			// Plain text log format (e.g., flimflam)
-			// Format: 2025-12-10T10:06:29.419466000Z flimflam: 2025/12/10 10:06:29.419466 serving response for trace_id=a4a0f2b6b62757a9503c03d99d77d5b2: path=/arc/daw/cap-add-diary-comments/diarycomments
+			// Plain text log format - any log line containing the trace ID
+			// Since trace ID is a GUID, it's unlikely to match unrelated logs
 
 			// Extract timestamp from docker logs --timestamps prefix
 			parts := strings.SplitN(line, " ", 2)
@@ -154,11 +154,6 @@ func searchContainerLogs(container, traceID string) []TraceEvent {
 
 			dockerTimestamp := parts[0]
 			logContent := parts[1]
-
-			// Extract trace_id from the log line
-			if !strings.Contains(logContent, "trace_id=") {
-				continue
-			}
 
 			event := TraceEvent{
 				Container: container,
