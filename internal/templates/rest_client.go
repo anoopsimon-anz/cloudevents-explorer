@@ -18,7 +18,7 @@ const RestClient = `
 			<div class="form-row">
 				<div class="form-group" style="flex: 0 0 120px;">
 					<label>Method</label>
-					<select id="httpMethod">
+					<select id="httpMethod" onchange="toggleBodyField()">
 						<option value="GET">GET</option>
 						<option value="POST">POST</option>
 						<option value="PUT">PUT</option>
@@ -55,7 +55,7 @@ const RestClient = `
 				</div>
 			</div>
 
-			<div class="form-row">
+			<div class="form-row" id="bodySection">
 				<div class="form-group" style="grid-column: 1 / -1;">
 					<label>Body (JSON format)</label>
 					<textarea id="requestBody" rows="10" style="font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 13px; width: 100%; padding: 8px; border: 1px solid #dadce0; border-radius: 4px;">{
@@ -242,6 +242,23 @@ function toggleCertificateSection() {
 	} else {
 		section.style.display = 'none';
 		icon.textContent = '▼';
+	}
+}
+
+function toggleBodyField() {
+	const method = document.getElementById('httpMethod').value;
+	const bodySection = document.getElementById('bodySection');
+	const bodyTextarea = document.getElementById('requestBody');
+
+	// Methods that support request body
+	const methodsWithBody = ['POST', 'PUT', 'PATCH'];
+
+	if (methodsWithBody.includes(method)) {
+		bodySection.style.display = 'flex';
+		bodyTextarea.disabled = false;
+	} else {
+		bodySection.style.display = 'none';
+		bodyTextarea.disabled = true;
 	}
 }
 
@@ -606,6 +623,9 @@ loadEnvironments();
 // Set default headers
 addHeaderRow('Content-Type', 'application/json', true);
 addHeaderRow('Accept', 'application/json', true);
+
+// Hide body field for GET requests (default)
+toggleBodyField();
 
 document.getElementById('responseContainer').innerHTML = '<div class="empty-state"><div>No response yet. Send a request to get started.</div></div>';
 `
