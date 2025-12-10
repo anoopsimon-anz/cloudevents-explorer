@@ -17,6 +17,9 @@ services:
       # Add any environment variables here if needed
       - TZ=Australia/Sydney
     restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
     networks:
       - devstack_devstack_network
     healthcheck:

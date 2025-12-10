@@ -47,9 +47,10 @@ func HandleRestSend(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create HTTP client with optional TLS configuration
-	client := &http.Client{
-		Timeout: 30 * time.Second,
+	// Create HTTP client with TLS configuration
+	// Default to InsecureSkipVerify=true for testing convenience
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: true,
 	}
 
 	// Configure TLS if certificates are provided
@@ -60,27 +61,22 @@ func HandleRestSend(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		tlsConfig := &tls.Config{
-			Certificates: []tls.Certificate{cert},
-			RootCAs:      x509.NewCertPool(),
-		}
-
-		client.Transport = &http.Transport{
-			TLSClientConfig: tlsConfig,
-		}
+		tlsConfig.Certificates = []tls.Certificate{cert}
+		tlsConfig.RootCAs = x509.NewCertPool()
 	} else if req.TLSCert != "" {
 		// If only cert is provided, use it as CA cert
-		tlsConfig := &tls.Config{
-			RootCAs: x509.NewCertPool(),
-		}
+		tlsConfig.RootCAs = x509.NewCertPool()
 		if ok := tlsConfig.RootCAs.AppendCertsFromPEM([]byte(req.TLSCert)); !ok {
 			sendRestError(w, "Failed to parse TLS certificate", http.StatusBadRequest)
 			return
 		}
+	}
 
-		client.Transport = &http.Transport{
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &http.Transport{
 			TLSClientConfig: tlsConfig,
-		}
+		},
 	}
 
 	// Prepare request body
