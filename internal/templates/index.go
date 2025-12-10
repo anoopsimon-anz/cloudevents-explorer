@@ -43,14 +43,17 @@ const Index = `<!DOCTYPE html>
         }
         .option-card {
             background: white;
-            border: 1px solid #dadce0;
-            border-radius: 8px;
-            padding: 32px;
+            border: 1px solid #e8eaed;
+            border-radius: 12px;
+            padding: 32px 24px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
             color: inherit;
-            display: block;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
         }
         .option-card:hover {
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
