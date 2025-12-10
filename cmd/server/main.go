@@ -29,7 +29,7 @@ func main() {
 	http.HandleFunc("/api/kafka/publish", handlers.HandlePublishKafka)
 
 	port := "8888"
-	log.Printf("🚀 CloudEvents Explorer starting on http://localhost:%s", port)
+	log.Printf("🚀 Testing Studio starting on http://localhost:%s", port)
 	log.Printf("📝 Configuration file: configs.json")
 	if err := http.ListenAndServe(":"+port, nil); err != nil {
 		log.Fatal(err)

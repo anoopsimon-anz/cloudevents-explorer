@@ -5,7 +5,7 @@ const Index = `<!DOCTYPE html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CloudEvents Explorer</title>
+    <title>Testing Studio</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -83,8 +83,7 @@ const Index = `<!DOCTYPE html>
     <div class="landing">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 48px;">
             <div>
-                <h1>CloudEvents Explorer</h1>
-                <p class="subtitle">Choose your message streaming platform</p>
+                <h1>Testing Studio</h1>
             </div>
             <div style="position: relative;">
                 <button onclick="toggleToolsMenu()" style="background: white; border: 1px solid #dadce0; padding: 8px 16px; border-radius: 4px; cursor: pointer; color: #5f6368; font-size: 14px; font-weight: 500;">

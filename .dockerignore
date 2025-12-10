@@ -1,0 +1,53 @@
+# Git
+.git/
+.gitignore
+.github/
+
+# Documentation
+*.md
+LICENSE
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+testing-studio
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test files
+*_test.go
+test/
+coverage.txt
+coverage.html
+
+# Config files (will be mounted as volume)
+configs.json
+
+# Docker files (not needed in build context)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Scripts
+start.sh
+
+# Project documentation
+PROJECT_SUMMARY.md
+ARCHITECTURE.md
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.log

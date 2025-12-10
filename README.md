@@ -38,6 +38,27 @@ A professional, modular web tool for exploring and testing Kafka and Google Clou
 
 ## 🚀 Quick Start
 
+### Docker (Recommended - connects to devstack)
+
+```bash
+cd ~/scratches/cloudevents-explorer
+
+# Start the application (builds if needed)
+make start
+
+# View logs
+make logs
+
+# Stop the application
+make stop
+```
+
+Open http://localhost:8888 in your browser.
+
+**Note**: When running in Docker, use the "Docker" configurations which connect to `dep_redpanda` and `dep_pubsub` services in the devstack network.
+
+### Local Development (without Docker)
+
 ```bash
 cd ~/scratches/cloudevents-explorer
 
@@ -52,7 +73,7 @@ go build -o testing-studio cmd/server/main.go
 ./testing-studio
 ```
 
-Open http://localhost:8888 in your browser.
+**Note**: When running locally, use the "Local" configurations which connect to `localhost:9092` and `localhost:8086`.
 
 ## 🏗️ Architecture
 
@@ -222,21 +243,45 @@ After triggering a Unica event → WriteProfileDiaryNote workflow:
 
 ## 🐛 Troubleshooting
 
-### Port 8888 in use?
-Change the port in `main.go`:
-```go
-port := "9999"  // Use different port
+### Docker: Kafka/PubSub not pulling messages
+
+**Problem**: Running in Docker but Kafka or PubSub pulls return zero messages.
+
+**Solution**: Make sure you're using the **"Docker"** configurations in the UI:
+- **Kafka**: Select "Unica Events (Docker)" - connects to `dep_redpanda:9092`
+- **PubSub**: Select "TMS PubSub (Docker)" - connects to `dep_pubsub:8086`
+
+The Docker container runs on the `devstack_devstack_network` and uses Docker service names instead of `localhost`.
+
+### Local: Kafka/PubSub not pulling messages
+
+**Problem**: Running locally (`go run`) but can't connect to services.
+
+**Solution**: Use the **"Local"** configurations:
+- **Kafka**: Select "Unica Events (Local)" - connects to `localhost:19092`
+- **PubSub**: Select "TMS PubSub (Local)" - connects to `localhost:8086`
+
+### Port 8888 already in use
+
+```bash
+# Kill any process using port 8888
+lsof -ti:8888 | xargs kill -9
 ```
 
-### Can't connect to PubSub?
-- Check devstack is running: `docker ps | grep pubsub`
-- Verify emulator host: should be `localhost:8086`
-- Check subscription exists in your project
+### Can't connect to devstack services
 
-### Messages not appearing?
-- Verify subscription ID is correct
-- Check that events are being published
-- Look at browser console for errors
+- Check devstack is running: `docker ps | grep dep_redpanda`
+- Ensure Testing Studio container is on devstack network: `docker inspect testing-studio | grep devstack_devstack_network`
+- Verify DNS resolution: `docker exec testing-studio getent hosts dep_redpanda`
+
+### Container keeps restarting
+
+Check logs for errors:
+```bash
+make logs
+# or
+docker logs testing-studio
+```
 
 ## 🚀 Advanced Usage
 

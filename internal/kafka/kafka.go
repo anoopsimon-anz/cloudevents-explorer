@@ -111,7 +111,13 @@ func Pull(params PullParams) (*PullResult, error) {
 	}
 
 	messages := []types.CloudEvent{}
-	timeout := time.After(5 * time.Second)
+
+	// Use a more aggressive timeout strategy:
+	// - Overall timeout: 10 seconds (enough time to fetch messages)
+	// - No-message timeout: 2 seconds of consecutive failures before giving up
+	timeout := time.After(10 * time.Second)
+	noMessageTimeout := 2 * time.Second
+	lastMessageTime := time.Now()
 
 	for len(messages) < params.MaxMessages {
 		select {
@@ -120,8 +126,15 @@ func Pull(params PullParams) (*PullResult, error) {
 		default:
 			msg, err := c.ReadMessage(100 * time.Millisecond)
 			if err != nil {
+				// If we haven't seen a message in noMessageTimeout, and we have at least 1 message, stop
+				if len(messages) > 0 && time.Since(lastMessageTime) > noMessageTimeout {
+					goto done
+				}
 				continue
 			}
+
+			// We got a message! Update the last message time
+			lastMessageTime = time.Now()
 
 			event := types.CloudEvent{
 				ID:        fmt.Sprintf("%s-%d-%d", params.Topic, msg.TopicPartition.Partition, msg.TopicPartition.Offset),
@@ -136,8 +149,30 @@ func Pull(params PullParams) (*PullResult, error) {
 				if err == nil && decodedData != nil {
 					event.Data = decodedData
 				} else {
-					// Fall back to raw data if decoding fails
-					event.RawData = string(msg.Value)
+					// Log the error for debugging
+					fmt.Printf("Failed to decode Avro message (partition=%d, offset=%d): %v\n",
+						msg.TopicPartition.Partition, msg.TopicPartition.Offset, err)
+
+					// Extract schema ID from message
+					var schemaID uint32
+					if len(msg.Value) >= 5 {
+						schemaID = binary.BigEndian.Uint32(msg.Value[1:5])
+					}
+
+					// Store error information with helpful debugging details
+					event.Data = map[string]interface{}{
+						"_error":          "Avro Decoding Failed",
+						"_errorDetails":   err.Error(),
+						"_schemaRegistry": params.SchemaRegistry,
+						"_schemaID":       schemaID,
+						"_messageSize":    len(msg.Value),
+						"_troubleshooting": map[string]string{
+							"step1": fmt.Sprintf("Verify schema registry is accessible: %s", params.SchemaRegistry),
+							"step2": fmt.Sprintf("Check if schema ID %d exists: %s/schemas/ids/%d", schemaID, params.SchemaRegistry, schemaID),
+							"step3": "Verify container can reach dep_redpanda:18081",
+							"step4": "Check if running with correct config (Docker vs Local)",
+						},
+					}
 				}
 			} else {
 				// Try plain JSON first
