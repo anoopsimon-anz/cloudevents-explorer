@@ -91,7 +91,7 @@ func searchContainerLogs(container, traceID string) []TraceEvent {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "docker", "logs", container)
+	cmd := exec.CommandContext(ctx, "docker", "logs", "--timestamps", container)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return nil
@@ -105,45 +105,77 @@ func searchContainerLogs(container, traceID string) []TraceEvent {
 			continue
 		}
 
+		// Try to parse as JSON first
 		var logJSON map[string]interface{}
-		if err := json.Unmarshal([]byte(line), &logJSON); err != nil {
-			continue
+		if err := json.Unmarshal([]byte(line), &logJSON); err == nil {
+			// JSON log format
+			timestamp, hasTimestamp := logJSON["timestamp"].(string)
+			logTraceID, hasTraceID := logJSON["trace_id"].(string)
+
+			if !hasTimestamp || !hasTraceID {
+				continue
+			}
+
+			event := TraceEvent{
+				Container: container,
+				Timestamp: timestamp,
+				TraceID:   logTraceID,
+			}
+
+			// Extract optional fields
+			if body, ok := logJSON["body"].(string); ok {
+				event.Body = body
+			}
+
+			if name, ok := logJSON["name"].(string); ok {
+				event.Name = name
+			}
+
+			if spanID, ok := logJSON["span_id"].(string); ok {
+				event.SpanID = spanID
+			}
+
+			if severity, ok := logJSON["severity"].(string); ok {
+				event.Severity = severity
+			} else if severity, ok := logJSON["severity_text"].(string); ok {
+				event.Severity = severity
+			}
+
+			events = append(events, event)
+		} else {
+			// Plain text log format (e.g., flimflam)
+			// Format: 2025-12-10T10:06:29.419466000Z flimflam: 2025/12/10 10:06:29.419466 serving response for trace_id=a4a0f2b6b62757a9503c03d99d77d5b2: path=/arc/daw/cap-add-diary-comments/diarycomments
+
+			// Extract timestamp from docker logs --timestamps prefix
+			parts := strings.SplitN(line, " ", 2)
+			if len(parts) < 2 {
+				continue
+			}
+
+			dockerTimestamp := parts[0]
+			logContent := parts[1]
+
+			// Extract trace_id from the log line
+			if !strings.Contains(logContent, "trace_id=") {
+				continue
+			}
+
+			event := TraceEvent{
+				Container: container,
+				Timestamp: dockerTimestamp,
+				TraceID:   traceID,
+				Body:      logContent,
+				Name:      "Log Entry",
+			}
+
+			// Try to extract more context from the log line
+			if strings.Contains(strings.ToLower(logContent), "error") ||
+			   strings.Contains(strings.ToLower(logContent), "failed") {
+				event.Severity = "error"
+			}
+
+			events = append(events, event)
 		}
-
-		// Check if it has trace_id and timestamp
-		timestamp, hasTimestamp := logJSON["timestamp"].(string)
-		logTraceID, hasTraceID := logJSON["trace_id"].(string)
-
-		if !hasTimestamp || !hasTraceID {
-			continue
-		}
-
-		event := TraceEvent{
-			Container: container,
-			Timestamp: timestamp,
-			TraceID:   logTraceID,
-		}
-
-		// Extract optional fields
-		if body, ok := logJSON["body"].(string); ok {
-			event.Body = body
-		}
-
-		if name, ok := logJSON["name"].(string); ok {
-			event.Name = name
-		}
-
-		if spanID, ok := logJSON["span_id"].(string); ok {
-			event.SpanID = spanID
-		}
-
-		if severity, ok := logJSON["severity"].(string); ok {
-			event.Severity = severity
-		} else if severity, ok := logJSON["severity_text"].(string); ok {
-			event.Severity = severity
-		}
-
-		events = append(events, event)
 	}
 
 	return events
