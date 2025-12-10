@@ -180,6 +180,7 @@ const Index = `<!DOCTYPE html>
     <div class="tools-wrapper">
         <button class="tools-btn" onclick="toggleToolsMenu()">Tools ▼</button>
         <div class="tools-menu" id="toolsMenu">
+            <a href="/config-editor">Configuration Editor</a>
             <a href="/flow-diagram">Flow Diagram</a>
             <a href="#" onclick="openBase64Tool(); toggleToolsMenu(); return false;">Base64 Encoder/Decoder</a>
         </div>
