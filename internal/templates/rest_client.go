@@ -36,8 +36,19 @@ const RestClient = `
 
 			<div class="form-row">
 				<div class="form-group" style="grid-column: 1 / -1;">
-					<label>Headers (JSON format)</label>
-					<textarea id="requestHeaders" rows="4" style="font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 13px; width: 100%; padding: 8px; border: 1px solid #dadce0; border-radius: 4px;">{
+					<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+						<label style="margin: 0;">Headers</label>
+						<button type="button" onclick="toggleHeadersView()" class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">Switch to JSON View</button>
+					</div>
+
+					<!-- Key-Value Headers View -->
+					<div id="headersKeyValue" style="display: block;">
+						<div id="headersList"></div>
+						<button type="button" onclick="addHeaderRow()" class="btn-secondary" style="margin-top: 8px; padding: 6px 12px; font-size: 13px;">+ Add Header</button>
+					</div>
+
+					<!-- JSON Headers View -->
+					<textarea id="requestHeaders" rows="4" style="display: none; font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 13px; width: 100%; padding: 8px; border: 1px solid #dadce0; border-radius: 4px;">{
   "Content-Type": "application/json",
   "Accept": "application/json"
 }</textarea>
@@ -55,19 +66,30 @@ const RestClient = `
 
 			<div class="form-row">
 				<div class="form-group" style="grid-column: 1 / -1;">
-					<label>TLS Certificate (Optional - PEM format)</label>
-					<textarea id="tlsCert" rows="6" placeholder="-----BEGIN CERTIFICATE-----
-MIIDXTCCAkWgAwIBAgIJAKZ...
------END CERTIFICATE-----" style="font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 13px; width: 100%; padding: 8px; border: 1px solid #dadce0; border-radius: 4px;"></textarea>
+					<button type="button" onclick="toggleCertificateSection()" class="btn-secondary" style="width: 100%; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+						<span>🔒 Client Certificates (Optional)</span>
+						<span id="certToggleIcon">▼</span>
+					</button>
 				</div>
 			</div>
 
-			<div class="form-row">
-				<div class="form-group" style="grid-column: 1 / -1;">
-					<label>TLS Private Key (Optional - PEM format)</label>
-					<textarea id="tlsKey" rows="6" placeholder="-----BEGIN PRIVATE KEY-----
+			<div id="certificateSection" style="display: none;">
+				<div class="form-row">
+					<div class="form-group" style="grid-column: 1 / -1;">
+						<label>TLS Certificate (PEM format)</label>
+						<textarea id="tlsCert" rows="6" placeholder="-----BEGIN CERTIFICATE-----
+MIIDXTCCAkWgAwIBAgIJAKZ...
+-----END CERTIFICATE-----" style="font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 13px; width: 100%; padding: 8px; border: 1px solid #dadce0; border-radius: 4px;"></textarea>
+					</div>
+				</div>
+
+				<div class="form-row">
+					<div class="form-group" style="grid-column: 1 / -1;">
+						<label>TLS Private Key (PEM format)</label>
+						<textarea id="tlsKey" rows="6" placeholder="-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0B...
 -----END PRIVATE KEY-----" style="font-family: 'Monaco', 'Menlo', 'Consolas', monospace; font-size: 13px; width: 100%; padding: 8px; border: 1px solid #dadce0; border-radius: 4px;"></textarea>
+					</div>
 				</div>
 			</div>
 
@@ -133,6 +155,111 @@ MIIEvQIBADANBgkqhkiG9w0B...
 const RestClientJS = `
 let environments = JSON.parse(localStorage.getItem('restClientEnvironments') || '{}');
 let currentEnv = '';
+let headersViewMode = 'keyvalue'; // 'keyvalue' or 'json'
+let headerRows = [];
+
+// Header row management
+function addHeaderRow(key = '', value = '', enabled = true) {
+	const id = 'header_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+	headerRows.push({ id, key, value, enabled });
+	renderHeaderRows();
+}
+
+function removeHeaderRow(id) {
+	headerRows = headerRows.filter(h => h.id !== id);
+	renderHeaderRows();
+}
+
+function updateHeaderRow(id, field, value) {
+	const header = headerRows.find(h => h.id === id);
+	if (header) {
+		header[field] = value;
+	}
+}
+
+function renderHeaderRows() {
+	const container = document.getElementById('headersList');
+	let html = '';
+
+	headerRows.forEach(header => {
+		html += '<div style="display: flex; gap: 8px; margin-bottom: 8px; align-items: center;">';
+		html += '<input type="checkbox" ' + (header.enabled ? 'checked' : '') + ' onchange="updateHeaderRow(\'' + header.id + '\', \'enabled\', this.checked)" style="width: 20px; height: 20px; cursor: pointer;" />';
+		html += '<input type="text" value="' + header.key + '" placeholder="Header Key" onchange="updateHeaderRow(\'' + header.id + '\', \'key\', this.value)" style="flex: 1; padding: 8px; border: 1px solid #dadce0; border-radius: 4px; font-size: 14px;" />';
+		html += '<input type="text" value="' + header.value + '" placeholder="Header Value" onchange="updateHeaderRow(\'' + header.id + '\', \'value\', this.value)" style="flex: 1; padding: 8px; border: 1px solid #dadce0; border-radius: 4px; font-size: 14px;" />';
+		html += '<button onclick="removeHeaderRow(\'' + header.id + '\')" class="btn-secondary" style="padding: 8px 12px; font-size: 12px;">×</button>';
+		html += '</div>';
+	});
+
+	container.innerHTML = html;
+}
+
+function toggleHeadersView() {
+	const keyValueDiv = document.getElementById('headersKeyValue');
+	const jsonTextarea = document.getElementById('requestHeaders');
+	const toggleButton = event.target;
+
+	if (headersViewMode === 'keyvalue') {
+		// Switch to JSON view
+		// First, sync key-value to JSON
+		const headers = {};
+		headerRows.filter(h => h.enabled && h.key).forEach(h => {
+			headers[h.key] = h.value;
+		});
+		jsonTextarea.value = JSON.stringify(headers, null, 2);
+
+		keyValueDiv.style.display = 'none';
+		jsonTextarea.style.display = 'block';
+		toggleButton.textContent = 'Switch to Key-Value View';
+		headersViewMode = 'json';
+	} else {
+		// Switch to key-value view
+		// First, sync JSON to key-value
+		try {
+			const headers = JSON.parse(jsonTextarea.value || '{}');
+			headerRows = [];
+			Object.entries(headers).forEach(([key, value]) => {
+				addHeaderRow(key, value, true);
+			});
+		} catch (e) {
+			showStatus('Invalid JSON in headers, keeping current view', true);
+			return;
+		}
+
+		keyValueDiv.style.display = 'block';
+		jsonTextarea.style.display = 'none';
+		toggleButton.textContent = 'Switch to JSON View';
+		headersViewMode = 'keyvalue';
+	}
+}
+
+function toggleCertificateSection() {
+	const section = document.getElementById('certificateSection');
+	const icon = document.getElementById('certToggleIcon');
+
+	if (section.style.display === 'none') {
+		section.style.display = 'block';
+		icon.textContent = '▲';
+	} else {
+		section.style.display = 'none';
+		icon.textContent = '▼';
+	}
+}
+
+function getHeadersObject() {
+	if (headersViewMode === 'keyvalue') {
+		const headers = {};
+		headerRows.filter(h => h.enabled && h.key).forEach(h => {
+			headers[h.key] = h.value;
+		});
+		return headers;
+	} else {
+		try {
+			return JSON.parse(document.getElementById('requestHeaders').value || '{}');
+		} catch (e) {
+			throw new Error('Invalid JSON in headers');
+		}
+	}
+}
 
 function loadEnvironments() {
 	const select = document.getElementById('envSelect');
@@ -167,7 +294,6 @@ function replaceVariables(text) {
 async function sendRequest() {
 	const method = document.getElementById('httpMethod').value;
 	const url = replaceVariables(document.getElementById('requestUrl').value.trim());
-	const headersText = replaceVariables(document.getElementById('requestHeaders').value.trim());
 	const bodyText = replaceVariables(document.getElementById('requestBody').value.trim());
 	const tlsCert = document.getElementById('tlsCert').value.trim();
 	const tlsKey = document.getElementById('tlsKey').value.trim();
@@ -179,11 +305,13 @@ async function sendRequest() {
 
 	let headers = {};
 	try {
-		if (headersText) {
-			headers = JSON.parse(headersText);
-		}
+		headers = getHeadersObject();
+		// Apply variable replacement to header values
+		Object.keys(headers).forEach(key => {
+			headers[key] = replaceVariables(headers[key]);
+		});
 	} catch (e) {
-		showStatus('Invalid JSON in headers', true);
+		showStatus('Invalid headers: ' + e.message, true);
 		return;
 	}
 
@@ -325,13 +453,27 @@ function formatBytes(bytes) {
 
 function clearRequest() {
 	document.getElementById('requestUrl').value = '';
-	document.getElementById('requestHeaders').value = '{\n  "Content-Type": "application/json",\n  "Accept": "application/json"\n}';
 	document.getElementById('requestBody').value = '{\n  "key": "value"\n}';
 	document.getElementById('tlsCert').value = '';
 	document.getElementById('tlsKey').value = '';
 	document.getElementById('httpMethod').value = 'GET';
 	document.getElementById('envSelect').value = '';
 	currentEnv = '';
+
+	// Reset headers to defaults
+	headerRows = [];
+	addHeaderRow('Content-Type', 'application/json', true);
+	addHeaderRow('Accept', 'application/json', true);
+
+	// Reset to key-value view
+	if (headersViewMode === 'json') {
+		toggleHeadersView();
+	}
+
+	// Hide certificate section
+	document.getElementById('certificateSection').style.display = 'none';
+	document.getElementById('certToggleIcon').textContent = '▼';
+
 	document.getElementById('responseContainer').innerHTML = '<div class="empty-state"><div>No response yet. Send a request to get started.</div></div>';
 	document.getElementById('responseStats').style.display = 'none';
 }
@@ -460,5 +602,10 @@ function deleteEnvironment(name) {
 
 // Initialize
 loadEnvironments();
+
+// Set default headers
+addHeaderRow('Content-Type', 'application/json', true);
+addHeaderRow('Accept', 'application/json', true);
+
 document.getElementById('responseContainer').innerHTML = '<div class="empty-state"><div>No response yet. Send a request to get started.</div></div>';
 `
