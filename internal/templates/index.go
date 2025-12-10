@@ -114,15 +114,6 @@ const Index = `<!DOCTYPE html>
             color: #5f6368;
             font-weight: 500;
         }
-        .time-indicator {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: #5f6368;
-            font-weight: 500;
-            font-family: monospace;
-        }
         .status-dot {
             width: 10px;
             height: 10px;
@@ -202,14 +193,6 @@ const Index = `<!DOCTYPE html>
         <div class="status-indicator" id="gcloudStatus">
             <div class="status-dot red"></div>
             <span id="gcloudText">GCloud</span>
-        </div>
-        <div class="time-indicator">
-            <span>UTC:</span>
-            <span id="utcTime">--:--:--</span>
-        </div>
-        <div class="time-indicator">
-            <span>AEST:</span>
-            <span id="aestTime">--:--:--</span>
         </div>
     </div>
     <div class="landing">
@@ -331,59 +314,6 @@ const Index = `<!DOCTYPE html>
 
         // Check GCloud status every 30 seconds
         setInterval(checkGCloudStatus, 30000);
-
-        // Update time displays
-        function updateTimes() {
-            const now = new Date();
-
-            // UTC time
-            const utcHours = String(now.getUTCHours()).padStart(2, '0');
-            const utcMinutes = String(now.getUTCMinutes()).padStart(2, '0');
-            const utcSeconds = String(now.getUTCSeconds()).padStart(2, '0');
-            document.getElementById('utcTime').textContent = utcHours + ':' + utcMinutes + ':' + utcSeconds;
-
-            // AEST/AEDT time (Australia/Sydney)
-            // AEDT (UTC+11): First Sunday in October to First Sunday in April
-            // AEST (UTC+10): First Sunday in April to First Sunday in October
-            const year = now.getUTCFullYear();
-            const month = now.getUTCMonth();
-            const day = now.getUTCDate();
-            const hours = now.getUTCHours();
-
-            // Find first Sunday in October
-            const octFirstDay = new Date(Date.UTC(year, 9, 1)); // October 1st
-            const octFirstSunday = 1 + (7 - octFirstDay.getUTCDay()) % 7;
-            const dstStart = new Date(Date.UTC(year, 9, octFirstSunday, 2, 0, 0)); // 2am UTC on first Sunday Oct
-
-            // Find first Sunday in April
-            const aprFirstDay = new Date(Date.UTC(year, 3, 1)); // April 1st
-            const aprFirstSunday = 1 + (7 - aprFirstDay.getUTCDay()) % 7;
-            const dstEnd = new Date(Date.UTC(year, 3, aprFirstSunday, 3, 0, 0)); // 3am UTC on first Sunday Apr
-
-            // Determine if we're in DST (AEDT = UTC+11) or standard time (AEST = UTC+10)
-            let offset = 10; // Default AEST
-            let label = 'AEST';
-
-            if (now >= dstStart || now < dstEnd) {
-                offset = 11; // AEDT
-                label = 'AEDT';
-            }
-
-            // Calculate Australian time
-            const ausTime = new Date(now.getTime() + offset * 60 * 60 * 1000);
-            const ausHours = String(ausTime.getUTCHours()).padStart(2, '0');
-            const ausMinutes = String(ausTime.getUTCMinutes()).padStart(2, '0');
-            const ausSeconds = String(ausTime.getUTCSeconds()).padStart(2, '0');
-
-            // Update display with timezone label
-            const timeIndicator = document.querySelector('.time-indicator:nth-of-type(2) span:first-child');
-            timeIndicator.textContent = label + ':';
-            document.getElementById('aestTime').textContent = ausHours + ':' + ausMinutes + ':' + ausSeconds;
-        }
-
-        // Update times immediately and every second
-        updateTimes();
-        setInterval(updateTimes, 1000);
 
         ` + Base64ModalJS + `
     </script>
