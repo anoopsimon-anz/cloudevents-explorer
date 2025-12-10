@@ -157,7 +157,7 @@ func GetBaseHTML(title, content, extraJS string) string {
 </head>
 <body>
     <div class="topbar">
-        <a href="/" class="logo">CloudEvents Explorer</a>
+        <a href="/" class="logo">Testing Studio</a>
         <a href="/" class="back-btn">← Back</a>
     </div>
 
