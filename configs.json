@@ -1,13 +1,7 @@
 {
   "pubsubConfigs": [
     {
-      "name": "TMS PubSub (Docker)",
-      "emulatorHost": "dep_pubsub:8086",
-      "projectId": "tms-suncorp-local",
-      "subscriptionId": "cloudevents.subscription"
-    },
-    {
-      "name": "TMS PubSub (Local)",
+      "name": "TMS PubSub",
       "emulatorHost": "localhost:8086",
       "projectId": "tms-suncorp-local",
       "subscriptionId": "cloudevents.subscription"
@@ -15,14 +9,7 @@
   ],
   "kafkaConfigs": [
     {
-      "name": "Unica Events (Docker)",
-      "brokers": "dep_redpanda:9092",
-      "topic": "unica.marketing.response.events",
-      "consumerGroup": "testing-studio-consumer",
-      "schemaRegistry": "http://dep_redpanda:18081"
-    },
-    {
-      "name": "Unica Events (Local)",
+      "name": "Unica Events",
       "brokers": "localhost:19092",
       "topic": "unica.marketing.response.events",
       "consumerGroup": "testing-studio-consumer",
