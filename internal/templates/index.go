@@ -177,59 +177,59 @@ const Index = `<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <div class="tools-wrapper">
-        <button class="tools-btn" onclick="toggleToolsMenu()">Tools ▼</button>
+    <div class="tools-wrapper" id="toolsWrapper">
+        <button class="tools-btn" id="toolsButton" onclick="toggleToolsMenu()">Tools ▼</button>
         <div class="tools-menu" id="toolsMenu">
-            <a href="/config-editor">Configuration Editor</a>
-            <a href="/flow-diagram">Communications - Event Handling</a>
-            <a href="#" onclick="openBase64Tool(); toggleToolsMenu(); return false;">Base64 Encoder/Decoder</a>
+            <a href="/config-editor" id="linkConfigEditor">Configuration Editor</a>
+            <a href="/flow-diagram" id="linkFlowDiagram">Communications - Event Handling</a>
+            <a href="#" id="linkBase64Tool" onclick="openBase64Tool(); toggleToolsMenu(); return false;">Base64 Encoder/Decoder</a>
         </div>
     </div>
-    <div class="status-indicators">
+    <div class="status-indicators" id="statusIndicators">
         <div class="status-indicator" id="dockerStatus">
-            <div class="status-dot red"></div>
-            <span>Docker</span>
+            <div class="status-dot red" id="dockerStatusDot"></div>
+            <span id="dockerStatusText">Docker</span>
         </div>
         <div class="status-indicator" id="gcloudStatus">
-            <div class="status-dot red"></div>
+            <div class="status-dot red" id="gcloudStatusDot"></div>
             <span id="gcloudText">GCloud</span>
         </div>
     </div>
-    <div class="landing">
-        <div class="hero">
-            <h1>Testing Studio</h1>
-            <p class="subtitle">Requires TMS Suncorp devstack to be running</p>
+    <div class="landing" id="landing">
+        <div class="hero" id="hero">
+            <h1 id="pageTitle">Testing Studio</h1>
+            <p class="subtitle" id="pageSubtitle">Requires TMS Suncorp devstack to be running</p>
         </div>
 
-        <div class="options">
-            <a href="/pubsub" class="option-card">
-                <div class="option-title">Google PubSub</div>
-                <div class="option-desc">View CloudEvents from Google Cloud PubSub subscriptions</div>
-                <span class="badge">CloudEvents</span>
+        <div class="options" id="optionsGrid">
+            <a href="/pubsub" class="option-card" id="cardPubsub">
+                <div class="option-title" id="titlePubsub">Google PubSub</div>
+                <div class="option-desc" id="descPubsub">View CloudEvents from Google Cloud PubSub subscriptions</div>
+                <span class="badge" id="badgePubsub">CloudEvents</span>
             </a>
 
-            <a href="/kafka" class="option-card">
-                <div class="option-title">Kafka / EventMesh</div>
-                <div class="option-desc">Consume Avro messages from Kafka topics</div>
-                <span class="badge">Avro Schema</span>
+            <a href="/kafka" class="option-card" id="cardKafka">
+                <div class="option-title" id="titleKafka">Kafka / EventMesh</div>
+                <div class="option-desc" id="descKafka">Consume Avro messages from Kafka topics</div>
+                <span class="badge" id="badgeKafka">Avro Schema</span>
             </a>
 
-            <a href="/rest-client" class="option-card">
-                <div class="option-title">REST Client</div>
-                <div class="option-desc">Send HTTP requests with custom headers, body, and TLS certificates</div>
-                <span class="badge">API Testing</span>
+            <a href="/rest-client" class="option-card" id="cardRestClient">
+                <div class="option-title" id="titleRestClient">REST Client</div>
+                <div class="option-desc" id="descRestClient">Send HTTP requests with custom headers, body, and TLS certificates</div>
+                <span class="badge" id="badgeRestClient">API Testing</span>
             </a>
 
-            <a href="/gcs" class="option-card">
-                <div class="option-title">GCS Browser</div>
-                <div class="option-desc">Browse Google Cloud Storage buckets and files with preview and download</div>
-                <span class="badge">Storage</span>
+            <a href="/gcs" class="option-card" id="cardGCS">
+                <div class="option-title" id="titleGCS">GCS Browser</div>
+                <div class="option-desc" id="descGCS">Browse Google Cloud Storage buckets and files with preview and download</div>
+                <span class="badge" id="badgeGCS">Storage</span>
             </a>
 
-            <a href="/trace-journey" class="option-card">
-                <div class="option-title">Trace Journey Viewer</div>
-                <div class="option-desc">Track requests across containers with trace IDs and visualize the journey</div>
-                <span class="badge">Debugging</span>
+            <a href="/trace-journey" class="option-card" id="cardTraceJourney">
+                <div class="option-title" id="titleTraceJourney">Trace Journey Viewer</div>
+                <div class="option-desc" id="descTraceJourney">Track requests across containers with trace IDs and visualize the journey</div>
+                <span class="badge" id="badgeTraceJourney">Debugging</span>
             </a>
         </div>
     </div>
@@ -256,8 +256,7 @@ const Index = `<!DOCTYPE html>
             try {
                 const response = await fetch('/api/docker/status');
                 const data = await response.json();
-                const statusIndicator = document.getElementById('dockerStatus');
-                const dot = statusIndicator.querySelector('.status-dot');
+                const dot = document.getElementById('dockerStatusDot');
 
                 if (data.running) {
                     dot.classList.remove('red');
@@ -282,8 +281,7 @@ const Index = `<!DOCTYPE html>
             try {
                 const response = await fetch('/api/gcloud/status');
                 const data = await response.json();
-                const statusIndicator = document.getElementById('gcloudStatus');
-                const dot = statusIndicator.querySelector('.status-dot');
+                const dot = document.getElementById('gcloudStatusDot');
                 const textSpan = document.getElementById('gcloudText');
 
                 if (data.authenticated) {
