@@ -339,6 +339,7 @@ func generateHTMLReport() error {
             border-right: 1px solid #dadce0;
             overflow-y: auto;
             flex-shrink: 0;
+            padding-top: 0;
         }
         .test-list-item {
             padding: 10px 16px;
@@ -397,7 +398,7 @@ func generateHTMLReport() error {
             flex: 1;
             background: #fafafa;
             overflow-y: auto;
-            padding: 24px;
+            padding: 0 24px 24px 24px;
         }
         .detail-content {
             background: white;
