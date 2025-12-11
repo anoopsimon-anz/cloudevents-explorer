@@ -325,7 +325,7 @@ func generateHTMLReport() error {
         .main-content {
             display: flex;
             position: fixed;
-            top: 130px;
+            top: 146px;
             left: 40px;
             right: 40px;
             bottom: 40px;
