@@ -256,6 +256,15 @@ const TraceJourney = `<!DOCTYPE html>
             overflow: hidden;
             text-overflow: ellipsis;
             max-width: 100%;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .timeline-message.expanded {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .timeline-message:hover {
+            color: #1a73e8;
         }
         .timeline-span {
             font-size: 11px;
@@ -510,12 +519,16 @@ const TraceJourney = `<!DOCTYPE html>
                                 ${isError ? '<span class="error-badge">ERROR</span>' : ''}
                             </div>
                             <div class="timeline-action">${event.name || 'Log Entry'}</div>
-                            <div class="timeline-message" title="${event.body}">${event.body}</div>
+                            <div class="timeline-message" onclick="toggleMessage(this)">${event.body}</div>
                             <div class="timeline-span">span: ${event.span_id}</div>
                         </div>
                     </div>
                 ` + "`" + `;
             }).join('');
+        }
+
+        function toggleMessage(element) {
+            element.classList.toggle('expanded');
         }
 
         // Initialize on page load
