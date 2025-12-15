@@ -2,11 +2,13 @@ package handlers
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"time"
 
@@ -72,11 +74,27 @@ func HandleRestSend(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Create custom dialer with Google Public DNS fallback
+	dialer := &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+		Resolver: &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				// Use Google Public DNS (8.8.8.8:53) as fallback
+				d := net.Dialer{
+					Timeout: time.Second * 5,
+				}
+				return d.DialContext(ctx, network, "8.8.8.8:53")
+			},
+		},
+	}
+
 	// Use custom transport with proper DNS resolution
 	transport := &http.Transport{
-		TLSClientConfig: tlsConfig,
-		// Force use of system DNS resolver
+		TLSClientConfig:   tlsConfig,
 		DisableKeepAlives: false,
+		DialContext:       dialer.DialContext,
 	}
 
 	client := &http.Client{
