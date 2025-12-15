@@ -15,5 +15,14 @@
       "consumerGroup": "testing-studio-consumer",
       "schemaRegistry": "http://localhost:18081"
     }
+  ],
+  "spannerConfigs": [
+    {
+      "name": "TMS Spanner DB Local",
+      "emulatorHost": "localhost:9010",
+      "projectId": "tms-suncorp-local",
+      "instanceId": "tms-suncorp-local",
+      "databaseId": "tms-suncorp-db"
+    }
   ]
 }

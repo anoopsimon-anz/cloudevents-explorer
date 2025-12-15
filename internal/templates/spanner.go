@@ -41,7 +41,6 @@ const SpannerContent = `
         <div class="button-group">
             <button class="btn-primary" onclick="testConnection()">Connect</button>
             <button class="btn-secondary" onclick="saveConfig()">Save Configuration</button>
-            <button class="btn-secondary" onclick="loadTables()">Load Tables</button>
         </div>
         <div id="connectionStatus" style="margin-top: 12px; padding: 8px; border-radius: 4px; display: none;"></div>
     </div>
@@ -216,6 +215,8 @@ async function testConnection() {
             statusDiv.style.color = '#188038';
             statusDiv.textContent = '✓ ' + result.message;
             showStatus('Connection successful!');
+            // Auto-load tables on successful connection
+            loadTables();
         } else {
             statusDiv.style.background = '#fce8e6';
             statusDiv.style.color = '#d93025';
@@ -309,15 +310,20 @@ function renderTables(tables) {
     tables.forEach(table => {
         const div = document.createElement('div');
         div.textContent = table.name;
-        div.style.cssText = 'padding: 8px 12px; cursor: pointer; border-radius: 4px; font-size: 13px; transition: background 0.2s;';
-        div.onmouseover = () => div.style.background = '#f1f3f4';
+        div.style.cssText = 'padding: 8px 12px; cursor: pointer; border-radius: 4px; font-size: 13px; transition: all 0.2s; border: 1px solid #dadce0; margin-bottom: 4px; background: white;';
+        div.onmouseover = () => {
+            div.style.background = '#f1f3f4';
+            div.style.borderColor = '#1a73e8';
+        };
         div.onmouseout = () => {
-            div.style.background = selectedTable === table.name ? '#e8f0fe' : '';
+            div.style.background = selectedTable === table.name ? '#e8f0fe' : 'white';
+            div.style.borderColor = selectedTable === table.name ? '#1a73e8' : '#dadce0';
         };
         div.onclick = () => selectTable(table.name);
 
         if (selectedTable === table.name) {
             div.style.background = '#e8f0fe';
+            div.style.borderColor = '#1a73e8';
         }
 
         tableList.appendChild(div);

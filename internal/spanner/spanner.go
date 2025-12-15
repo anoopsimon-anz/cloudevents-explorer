@@ -241,29 +241,20 @@ func ExecuteQuery(req types.QueryRequest) types.QueryResponse {
 			columns = row.ColumnNames()
 		}
 
-		// Convert row to map using GenericColumnValue
+		// Convert row to map - use string representation for all values
 		rowMap := make(map[string]interface{})
 
-		// Decode each column using Spanner's generic value decoder
 		for i, col := range columns {
+			// Use GenericColumnValue and convert to string for display
 			var val spanner.GenericColumnValue
 			if err := row.Column(i, &val); err != nil {
-				return types.QueryResponse{
-					Error:         fmt.Sprintf("Failed to decode column %s: %v", col, err),
-					ExecutionTime: time.Since(startTime).String(),
-				}
+				rowMap[col] = fmt.Sprintf("Error: %v", err)
+				continue
 			}
 
-			// Decode the generic value to Go interface{}
-			var decodedVal interface{}
-			if err := val.Decode(&decodedVal); err != nil {
-				return types.QueryResponse{
-					Error:         fmt.Sprintf("Failed to decode value for column %s: %v", col, err),
-					ExecutionTime: time.Since(startTime).String(),
-				}
-			}
-
-			rowMap[col] = decodedVal
+			// Convert value to string for JSON serialization
+			// This handles all Spanner types (STRING, INT64, FLOAT64, BOOL, BYTES, etc.)
+			rowMap[col] = fmt.Sprintf("%v", val.Value)
 		}
 
 		rows = append(rows, rowMap)
