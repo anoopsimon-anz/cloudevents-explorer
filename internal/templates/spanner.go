@@ -73,11 +73,11 @@ const SpannerContent = `
             <div class="panel-header" style="flex-shrink: 0;">
                 <div class="panel-title">SQL Editor</div>
             </div>
-            <div class="panel-body" style="flex: 1; display: flex; flex-direction: column;">
-                <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+            <div class="panel-body">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
                     <textarea id="sqlQuery"
-                              style="flex: 1; min-height: 150px; max-height: 150px; font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-                                     font-size: 13px; resize: none; padding: 12px;"
+                              style="height: 150px; width: 100%; font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+                                     font-size: 13px; resize: none; padding: 12px; box-sizing: border-box;"
                               placeholder="-- Enter SQL query here&#10;SELECT * FROM TableName LIMIT 10;"></textarea>
                     <div class="button-group">
                         <button class="btn-primary" onclick="executeQuery()">Run Query</button>
