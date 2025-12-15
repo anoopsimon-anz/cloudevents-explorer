@@ -76,8 +76,8 @@ const SpannerContent = `
             <div class="panel-body" style="flex: 1; display: flex; flex-direction: column;">
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
                     <textarea id="sqlQuery"
-                              style="flex: 1; min-height: 150px; font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-                                     font-size: 13px; resize: vertical; padding: 12px;"
+                              style="flex: 1; min-height: 150px; max-height: 150px; font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+                                     font-size: 13px; resize: none; padding: 12px;"
                               placeholder="-- Enter SQL query here&#10;SELECT * FROM TableName LIMIT 10;"></textarea>
                     <div class="button-group">
                         <button class="btn-primary" onclick="executeQuery()">Run Query</button>
@@ -425,9 +425,9 @@ function renderResultsTable(columns, rows) {
     let html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
 
     // Header
-    html += '<thead><tr style="background: #f8f9fa; border-bottom: 2px solid #dadce0;">';
+    html += '<thead><tr style="background: #f8f9fa;">';
     columns.forEach(col => {
-        html += '<th style="padding: 12px; text-align: left; font-weight: 600; color: #5f6368;">' + col + '</th>';
+        html += '<th style="padding: 12px; text-align: left; font-weight: 600; color: #5f6368; border: 1px solid #dadce0;">' + col + '</th>';
     });
     html += '</tr></thead>';
 
@@ -435,7 +435,7 @@ function renderResultsTable(columns, rows) {
     html += '<tbody>';
     rows.forEach((row, idx) => {
         const bgColor = idx % 2 === 0 ? 'white' : '#f8f9fa';
-        html += '<tr style="background: ' + bgColor + '; border-bottom: 1px solid #e8eaed;">';
+        html += '<tr style="background: ' + bgColor + ';">';
         columns.forEach(col => {
             let value = row[col];
             if (value === null || value === undefined) {
@@ -443,7 +443,7 @@ function renderResultsTable(columns, rows) {
             } else if (typeof value === 'object') {
                 value = JSON.stringify(value);
             }
-            html += '<td style="padding: 10px; color: #202124;">' + value + '</td>';
+            html += '<td style="padding: 10px; color: #202124; border: 1px solid #dadce0;">' + value + '</td>';
         });
         html += '</tr>';
     });
@@ -457,5 +457,119 @@ loadConfigurations();
 `
 
 func GetSpannerHTML() string {
-	return GetBaseHTML("Spanner Explorer", SpannerContent, SpannerJS)
+	return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanner Explorer - Testing Studio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+            background: #f5f5f5;
+            color: #202124;
+            min-height: 100vh;
+        }
+        .topbar {
+            background: white;
+            border-bottom: 1px solid #dadce0;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .logo {
+            font-size: 18px;
+            font-weight: 500;
+            color: #202124;
+            text-decoration: none;
+        }
+        .back-btn {
+            color: #1a73e8;
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+        .back-btn:hover { background: #f1f3f4; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .panel { background: white; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 16px; }
+        .panel-header { padding: 16px 20px; border-bottom: 1px solid #dadce0; }
+        .panel-title { font-size: 14px; font-weight: 500; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; }
+        .panel-body { padding: 20px; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 13px; color: #5f6368; font-weight: 500; }
+        input, select {
+            background: white;
+            border: 1px solid #dadce0;
+            color: #202124;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        input:focus, select:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
+        .button-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        button {
+            padding: 8px 16px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+            color: #202124;
+        }
+        .btn-primary { background: #1a73e8; color: white; border-color: #1a73e8; }
+        .btn-primary:hover { background: #1765cc; }
+        .btn-secondary { background: white; color: #5f6368; }
+        .btn-secondary:hover { background: #f1f3f4; }
+        .status-toast {
+            position: fixed;
+            top: 80px;
+            right: 24px;
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            display: none;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .status-toast.success { background: #188038; color: white; }
+        .status-toast.error { background: #d93025; color: white; }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <a href="/" class="logo">Testing Studio</a>
+        <a href="/" class="back-btn">← Back</a>
+    </div>
+
+    <div class="container">
+        ` + SpannerContent + `
+    </div>
+
+    <div id="statusToast" class="status-toast"></div>
+
+    <script>
+        function showStatus(message, isError = false) {
+            const toast = document.getElementById('statusToast');
+            toast.textContent = message;
+            toast.className = 'status-toast ' + (isError ? 'error' : 'success');
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        ` + SpannerJS + `
+    </script>
+</body>
+</html>`
 }
