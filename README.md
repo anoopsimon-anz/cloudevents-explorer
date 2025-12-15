@@ -1,6 +1,6 @@
 # 📡 Testing Studio
 
-A professional web tool for testing and debugging cloud services locally including Google Cloud PubSub, Kafka/EventMesh, REST APIs, and Google Cloud Storage.
+A professional web tool for testing and debugging cloud services locally including Google Cloud PubSub, Kafka/EventMesh, REST APIs, Google Cloud Storage, and Google Cloud Spanner.
 
 ![Version](https://img.shields.io/badge/version-3.0.0-blue)
 ![Go](https://img.shields.io/badge/go-1.21+-00ADD8?logo=go)
@@ -36,6 +36,13 @@ A professional web tool for testing and debugging cloud services locally includi
 - Visualize message flows
 - Base64 encoder/decoder
 
+### 🗄️ Spanner Explorer
+- Connect to local Spanner emulator
+- Browse tables and view schemas
+- Execute SQL queries (SELECT and DML)
+- Save multiple connection profiles
+- Spanner Studio-style interface
+
 ### 🔍 Status Indicators
 - Docker status monitoring
 - GCloud authentication status with last login time
@@ -69,11 +76,13 @@ testing-studio/
 │   │   ├── gcs.go             # GCS Browser handlers
 │   │   ├── pubsub.go          # PubSub handlers
 │   │   ├── kafka.go           # Kafka handlers
+│   │   ├── spanner.go         # Spanner handlers
 │   │   ├── rest_client.go     # REST client handlers
 │   │   ├── docker_status.go   # Docker status checker
 │   │   └── gcloud_status.go   # GCloud auth checker
 │   ├── kafka/                  # Kafka operations
 │   ├── pubsub/                 # PubSub operations
+│   ├── spanner/                # Spanner operations
 │   ├── templates/              # HTML templates
 │   └── types/                  # Shared types
 ├── go.mod
@@ -119,6 +128,21 @@ testing-studio/
 3. Optionally configure TLS client certificate
 4. Click **Send Request**
 
+### Spanner Explorer
+1. Navigate to **http://localhost:8888/spanner**
+2. Configure connection settings:
+   - **Emulator Host**: `localhost:9010`
+   - **Project ID**: `tms-suncorp-local`
+   - **Instance ID**: `tms-suncorp-local`
+   - **Database ID**: `tms-suncorp-db`
+3. Click **Connect** to test connection
+4. Click **Load Tables** to browse database tables
+5. Click a table to select it
+6. Enter SQL query in editor or use example queries
+7. Click **Run Query** to execute
+
+**Local Development**: Requires Spanner emulator running on `localhost:9010`
+
 ## 🎯 Why This Tool?
 
 ### The Problem
@@ -142,6 +166,7 @@ Testing Studio provides native Go SDK integration for all services, bypassing pr
 - (Optional) PubSub emulator running on `localhost:8086`
 - (Optional) Kafka/Redpanda running on `localhost:19092`
 - (Optional) fake-gcs-server running on `localhost:4443`
+- (Optional) Spanner emulator running on `localhost:9010`
 
 ### Running Services
 
@@ -161,6 +186,13 @@ make devstack.start
 docker run -d --name gcs \
   -p 4443:4443 \
   fsouza/fake-gcs-server -scheme http -port 4443
+```
+
+**Spanner Emulator**:
+```bash
+docker run -d --name spanner-emulator \
+  -p 9010:9010 \
+  gcr.io/cloud-spanner-emulator/emulator
 ```
 
 ## 📂 Configuration
@@ -183,6 +215,15 @@ Configurations are stored in `configs.json`:
       "bootstrapServers": "localhost:19092",
       "schemaRegistry": "http://localhost:8081",
       "topic": "cloudevents"
+    }
+  ],
+  "spanner": [
+    {
+      "name": "TMS Local",
+      "emulatorHost": "localhost:9010",
+      "projectId": "tms-suncorp-local",
+      "instanceId": "tms-suncorp-local",
+      "databaseId": "tms-suncorp-db"
     }
   ]
 }
@@ -228,6 +269,12 @@ lsof -ti:8888 | xargs kill -9
 - Verify fake-gcs-server is running on `localhost:4443`
 - Create a test bucket using the GCS API
 - Check server logs for errors
+
+### Can't connect to Spanner emulator
+- Verify emulator is running: `docker ps | grep spanner`
+- Check emulator host in configuration
+- Ensure database exists in emulator
+- Check emulator logs: `docker logs spanner-emulator`
 
 ### GCloud status shows "Not authenticated"
 - Run `gcloud auth login`
