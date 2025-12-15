@@ -2,6 +2,7 @@ package spanner
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strings"
@@ -241,37 +242,79 @@ func ExecuteQuery(req types.QueryRequest) types.QueryResponse {
 			columns = row.ColumnNames()
 		}
 
-		// Convert row to map - decode each column to its native type
+		// Convert row to map - try multiple type decodings
 		rowMap := make(map[string]interface{})
 
 		for i, col := range columns {
-			var val spanner.NullString
-			if err := row.Column(i, &val); err != nil {
-				// If string decode fails, try other types
-				var intVal spanner.NullInt64
-				if err := row.Column(i, &intVal); err == nil && intVal.Valid {
-					rowMap[col] = intVal.Int64
-					continue
+			// Try to decode as different Spanner types, falling back to string
+			var stringVal spanner.NullString
+			if err := row.Column(i, &stringVal); err == nil {
+				if stringVal.Valid {
+					rowMap[col] = stringVal.StringVal
+				} else {
+					rowMap[col] = nil
 				}
-				var floatVal spanner.NullFloat64
-				if err := row.Column(i, &floatVal); err == nil && floatVal.Valid {
-					rowMap[col] = floatVal.Float64
-					continue
-				}
-				var boolVal spanner.NullBool
-				if err := row.Column(i, &boolVal); err == nil && boolVal.Valid {
-					rowMap[col] = boolVal.Bool
-					continue
-				}
-				// If all else fails, store the error
-				rowMap[col] = fmt.Sprintf("decode error: %v", err)
 				continue
 			}
 
-			if val.Valid {
-				rowMap[col] = val.StringVal
+			var intVal spanner.NullInt64
+			if err := row.Column(i, &intVal); err == nil {
+				if intVal.Valid {
+					rowMap[col] = intVal.Int64
+				} else {
+					rowMap[col] = nil
+				}
+				continue
+			}
+
+			var floatVal spanner.NullFloat64
+			if err := row.Column(i, &floatVal); err == nil {
+				if floatVal.Valid {
+					rowMap[col] = floatVal.Float64
+				} else {
+					rowMap[col] = nil
+				}
+				continue
+			}
+
+			var boolVal spanner.NullBool
+			if err := row.Column(i, &boolVal); err == nil {
+				if boolVal.Valid {
+					rowMap[col] = boolVal.Bool
+				} else {
+					rowMap[col] = nil
+				}
+				continue
+			}
+
+			var timeVal spanner.NullTime
+			if err := row.Column(i, &timeVal); err == nil {
+				if timeVal.Valid {
+					rowMap[col] = timeVal.Time.Format(time.RFC3339)
+				} else {
+					rowMap[col] = nil
+				}
+				continue
+			}
+
+			var jsonVal spanner.NullJSON
+			if err := row.Column(i, &jsonVal); err == nil {
+				if jsonVal.Valid {
+					// Convert JSON value to string representation
+					jsonBytes, _ := json.Marshal(jsonVal.Value)
+					rowMap[col] = string(jsonBytes)
+				} else {
+					rowMap[col] = nil
+				}
+				continue
+			}
+
+			// For any other types (BYTES, ARRAY, etc.), convert to string
+			var genericVal interface{}
+			if err := row.Column(i, &genericVal); err == nil {
+				rowMap[col] = fmt.Sprintf("%v", genericVal)
 			} else {
-				rowMap[col] = nil
+				rowMap[col] = "unsupported type"
 			}
 		}
 
