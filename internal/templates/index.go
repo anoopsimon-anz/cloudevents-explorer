@@ -174,13 +174,41 @@ const Index = `<!DOCTYPE html>
         .tools-menu a:not(:last-child) {
             border-bottom: 1px solid #e8eaed;
         }
+        .settings-icon {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 40;
+            background: white;
+            border: 2px solid #dadce0;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #5f6368;
+            text-decoration: none;
+        }
+        .settings-icon:hover {
+            background: #1a73e8;
+            border-color: #1a73e8;
+            color: white;
+            box-shadow: 0 4px 16px rgba(26,115,232,0.3);
+            transform: rotate(90deg);
+        }
+        .settings-icon svg {
+            transition: transform 0.3s;
+        }
     </style>
 </head>
 <body>
     <div class="tools-wrapper" id="toolsWrapper">
         <button class="tools-btn" id="toolsButton" onclick="toggleToolsMenu()">Tools ▼</button>
         <div class="tools-menu" id="toolsMenu">
-            <a href="/config-editor" id="linkConfigEditor">Configuration Editor</a>
             <a href="/flow-diagram" id="linkFlowDiagram">Communications - Event Handling</a>
             <a href="#" id="linkBase64Tool" onclick="openBase64Tool(); toggleToolsMenu(); return false;">Base64 Encoder/Decoder</a>
             <a href="#" id="linkTOONTool" onclick="openTOONTool(); toggleToolsMenu(); return false;">JSON to TOON Converter</a>
@@ -196,6 +224,12 @@ const Index = `<!DOCTYPE html>
             <span id="gcloudText">GCloud</span>
         </div>
     </div>
+    <a href="/config-editor" class="settings-icon" id="settingsIcon" title="Global Settings - Configure all connections">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m5.66-13.66l-4.24 4.24m0 6l-4.24 4.24M23 12h-6m-6 0H1m18.66 5.66l-4.24-4.24m0-6l-4.24-4.24"></path>
+        </svg>
+    </a>
     <div class="landing" id="landing">
         <div class="hero" id="hero">
             <h1 id="pageTitle">Testing Studio</h1>
