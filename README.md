@@ -5,15 +5,15 @@ A web-based tool for testing local cloud services - PubSub, Kafka, REST APIs, GC
 ## UI Screenshots
 
 ### Homepage
-![Homepagse](screenshots/ui-homepage.png) 
+![Homepage](docs/screenshots/ui-homepage.png)
 
 ### Settings / Config Editor
-![Settings](screenshots/ui-settings.png)
+![Settings](docs/screenshots/ui-settings.png)
 
 ### REST Client (Postman-style)
-![REST Client](screenshots/ui-rest-client.png)
+![REST Client](docs/screenshots/ui-rest-client.png)
 
-## Features s
+## Features
 
 - **Google PubSub** - Pull and view CloudEvents from subscriptions
 - **Kafka / EventMesh** - Consume and publish Avro messages
