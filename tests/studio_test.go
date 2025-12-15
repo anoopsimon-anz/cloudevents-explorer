@@ -62,6 +62,7 @@ func TestStudioHomePage(t *testing.T) {
 		{"cardRestClient", "REST Client"},
 		{"cardGCS", "GCS Browser"},
 		{"cardTraceJourney", "Trace Journey Viewer"},
+		{"cardSpanner", "Spanner Explorer"},
 	}
 
 	for _, card := range cards {
