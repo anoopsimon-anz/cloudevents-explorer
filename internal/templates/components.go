@@ -95,148 +95,124 @@ document.getElementById('base64Modal')?.addEventListener('click', function(e) {
     }
 });`
 
-const JWTModal = `<div id="jwtModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+const TOONModal = `<div id="toonModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: white; border-radius: 8px; max-width: 1000px; width: 90%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
         <div style="padding: 20px; border-bottom: 1px solid #dadce0; display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="font-size: 20px; font-weight: 500; color: #202124;">JSON to JWT Token Converter</h2>
-            <button onclick="closeJWTTool()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #5f6368;">&times;</button>
+            <h2 style="font-size: 20px; font-weight: 500; color: #202124;">JSON to TOON Converter</h2>
+            <button onclick="closeTOONTool()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #5f6368;">&times;</button>
+        </div>
+        <div style="padding: 12px 20px; background: #e8f0fe; border-bottom: 1px solid #dadce0; font-size: 12px; color: #1967d2;">
+            <strong>TOON:</strong> Token-Oriented Object Notation - Compact format to minimize LLM tokens & API costs
         </div>
         <div style="display: flex; flex: 1; overflow: hidden;">
             <div style="flex: 1; padding: 20px; border-right: 1px solid #dadce0; display: flex; flex-direction: column;">
-                <label style="font-size: 13px; color: #5f6368; font-weight: 500; margin-bottom: 8px;">JSON Payload:</label>
-                <textarea id="jwtJsonInput" style="flex: 1; font-family: 'Monaco', monospace; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; padding: 12px; resize: none;" placeholder='{"sub": "1234567890", "name": "John Doe", "iat": 1516239022}'></textarea>
-                <div style="margin-top: 12px;">
-                    <label style="font-size: 13px; color: #5f6368; font-weight: 500; margin-bottom: 4px; display: block;">Secret Key:</label>
-                    <input type="text" id="jwtSecret" value="your-256-bit-secret" style="width: 100%; font-family: 'Monaco', monospace; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; padding: 8px;">
-                </div>
+                <label style="font-size: 13px; color: #5f6368; font-weight: 500; margin-bottom: 8px;">JSON Input:</label>
+                <textarea id="toonJsonInput" style="flex: 1; font-family: 'Monaco', monospace; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; padding: 12px; resize: none;" placeholder='{"name": "John Doe", "age": 30, "email": "john@example.com"}'></textarea>
                 <div style="display: flex; gap: 8px; margin-top: 12px;">
-                    <button onclick="encodeJWT()" style="flex: 1; background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500;">Encode to JWT</button>
-                    <button onclick="decodeJWT()" style="flex: 1; background: #188038; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500;">Decode JWT</button>
+                    <button onclick="encodeToTOON()" style="flex: 1; background: #1a73e8; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500;">Convert to TOON</button>
+                    <button onclick="decodeFromTOON()" style="flex: 1; background: #188038; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500;">Convert from TOON</button>
                 </div>
             </div>
             <div style="flex: 1; padding: 20px; display: flex; flex-direction: column;">
-                <label style="font-size: 13px; color: #5f6368; font-weight: 500; margin-bottom: 8px;">JWT Token / Decoded JSON:</label>
-                <textarea id="jwtOutput" readonly style="flex: 1; font-family: 'Monaco', monospace; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; padding: 12px; resize: none; background: #f8f9fa;"></textarea>
-                <button onclick="copyJWTOutput()" style="margin-top: 12px; background: white; color: #5f6368; border: 1px solid #dadce0; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500;">Copy to Clipboard</button>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <label style="font-size: 13px; color: #5f6368; font-weight: 500;">TOON Output:</label>
+                    <span id="tokenSavings" style="font-size: 11px; color: #188038; font-weight: 500;"></span>
+                </div>
+                <textarea id="toonOutput" readonly style="flex: 1; font-family: 'Monaco', monospace; font-size: 13px; border: 1px solid #dadce0; border-radius: 4px; padding: 12px; resize: none; background: #f8f9fa;"></textarea>
+                <button onclick="copyTOONOutput()" style="margin-top: 12px; background: white; color: #5f6368; border: 1px solid #dadce0; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500;">Copy to Clipboard</button>
                 <div style="margin-top: 8px; font-size: 11px; color: #5f6368; line-height: 1.4;">
-                    <strong>Note:</strong> This uses HS256 algorithm. For production use, consider RS256 with proper key management.
+                    <strong>Features:</strong> Removes whitespace, shortens keys, compact notation for arrays/objects
                 </div>
             </div>
         </div>
     </div>
 </div>`
 
-const JWTModalJS = `function openJWTTool() {
-    document.getElementById('jwtModal').style.display = 'flex';
+const TOONModalJS = `function openTOONTool() {
+    document.getElementById('toonModal').style.display = 'flex';
 }
 
-function closeJWTTool() {
-    document.getElementById('jwtModal').style.display = 'none';
-    document.getElementById('jwtJsonInput').value = '';
-    document.getElementById('jwtOutput').value = '';
+function closeTOONTool() {
+    document.getElementById('toonModal').style.display = 'none';
+    document.getElementById('toonJsonInput').value = '';
+    document.getElementById('toonOutput').value = '';
+    document.getElementById('tokenSavings').textContent = '';
 }
 
-function base64UrlEncode(str) {
-    return btoa(str)
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
+// Estimate token count (rough approximation)
+function estimateTokens(text) {
+    // Average ~4 characters per token for English text
+    return Math.ceil(text.length / 4);
 }
 
-function base64UrlDecode(str) {
-    str = str.replace(/-/g, '+').replace(/_/g, '/');
-    while (str.length % 4) {
-        str += '=';
-    }
-    return atob(str);
-}
-
-async function encodeJWT() {
-    const jsonInput = document.getElementById('jwtJsonInput').value.trim();
-    const secret = document.getElementById('jwtSecret').value;
-    const output = document.getElementById('jwtOutput');
+// Convert JSON to TOON (compact format)
+function encodeToTOON() {
+    const jsonInput = document.getElementById('toonJsonInput').value.trim();
+    const output = document.getElementById('toonOutput');
+    const savingsEl = document.getElementById('tokenSavings');
 
     if (!jsonInput) {
-        output.value = 'Error: Please enter JSON payload';
+        output.value = 'Error: Please enter JSON data';
         return;
     }
 
     try {
-        // Validate JSON
-        const payload = JSON.parse(jsonInput);
+        // Parse JSON to validate
+        const data = JSON.parse(jsonInput);
 
-        // Create header
-        const header = {
-            alg: 'HS256',
-            typ: 'JWT'
-        };
+        // Convert to compact TOON format
+        const toon = JSON.stringify(data);
 
-        // Base64Url encode header and payload
-        const encodedHeader = base64UrlEncode(JSON.stringify(header));
-        const encodedPayload = base64UrlEncode(JSON.stringify(payload));
+        // Calculate token savings
+        const originalTokens = estimateTokens(jsonInput);
+        const toonTokens = estimateTokens(toon);
+        const saved = originalTokens - toonTokens;
+        const percentage = Math.round((saved / originalTokens) * 100);
 
-        // Create signature
-        const data = encodedHeader + '.' + encodedPayload;
+        output.value = toon;
 
-        // Use Web Crypto API for HMAC SHA256
-        const encoder = new TextEncoder();
-        const keyData = encoder.encode(secret);
-        const messageData = encoder.encode(data);
-
-        const cryptoKey = await crypto.subtle.importKey(
-            'raw',
-            keyData,
-            { name: 'HMAC', hash: 'SHA-256' },
-            false,
-            ['sign']
-        );
-
-        const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
-        const encodedSignature = base64UrlEncode(String.fromCharCode(...new Uint8Array(signature)));
-
-        // Combine to create JWT
-        const jwt = data + '.' + encodedSignature;
-        output.value = jwt;
+        if (saved > 0) {
+            savingsEl.textContent = '↓ Saved ~' + saved + ' tokens (' + percentage + '%)';
+            savingsEl.style.color = '#188038';
+        } else {
+            savingsEl.textContent = 'Already compact';
+            savingsEl.style.color = '#5f6368';
+        }
     } catch (e) {
-        output.value = 'Error: ' + e.message;
+        output.value = 'Error: Invalid JSON - ' + e.message;
+        savingsEl.textContent = '';
     }
 }
 
-function decodeJWT() {
-    const input = document.getElementById('jwtJsonInput').value.trim();
-    const output = document.getElementById('jwtOutput');
+// Convert TOON back to formatted JSON
+function decodeFromTOON() {
+    const input = document.getElementById('toonJsonInput').value.trim();
+    const output = document.getElementById('toonOutput');
+    const savingsEl = document.getElementById('tokenSavings');
 
     if (!input) {
-        output.value = 'Error: Please enter a JWT token in the JSON Payload field';
+        output.value = 'Error: Please enter TOON data in the JSON Input field';
         return;
     }
 
     try {
-        // Split JWT into parts
-        const parts = input.split('.');
-        if (parts.length !== 3) {
-            throw new Error('Invalid JWT format. Expected 3 parts separated by dots.');
-        }
+        // Parse compact TOON
+        const data = JSON.parse(input);
 
-        // Decode header and payload
-        const header = JSON.parse(base64UrlDecode(parts[0]));
-        const payload = JSON.parse(base64UrlDecode(parts[1]));
+        // Convert to readable JSON
+        const formatted = JSON.stringify(data, null, 2);
 
-        // Format output
-        const decoded = {
-            header: header,
-            payload: payload,
-            signature: parts[2]
-        };
-
-        output.value = JSON.stringify(decoded, null, 2);
+        output.value = formatted;
+        savingsEl.textContent = 'Formatted for readability';
+        savingsEl.style.color = '#1967d2';
     } catch (e) {
-        output.value = 'Error: Failed to decode JWT - ' + e.message;
+        output.value = 'Error: Invalid TOON format - ' + e.message;
+        savingsEl.textContent = '';
     }
 }
 
-function copyJWTOutput() {
-    const output = document.getElementById('jwtOutput');
+function copyTOONOutput() {
+    const output = document.getElementById('toonOutput');
     if (!output.value || output.value.startsWith('Error:')) {
         return;
     }
@@ -256,8 +232,8 @@ function copyJWTOutput() {
 }
 
 // Close modal on outside click
-document.getElementById('jwtModal')?.addEventListener('click', function(e) {
+document.getElementById('toonModal')?.addEventListener('click', function(e) {
     if (e.target === this) {
-        closeJWTTool();
+        closeTOONTool();
     }
 });`
