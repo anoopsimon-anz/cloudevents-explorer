@@ -23,9 +23,18 @@ type KafkaConfig struct {
 	SchemaRegistry string `json:"schemaRegistry"`
 }
 
+type SpannerConfig struct {
+	Name         string `json:"name"`
+	EmulatorHost string `json:"emulatorHost"`
+	ProjectID    string `json:"projectId"`
+	InstanceID   string `json:"instanceId"`
+	DatabaseID   string `json:"databaseId"`
+}
+
 type Config struct {
-	PubSubConfigs []PubSubConfig `json:"pubsubConfigs"`
-	KafkaConfigs  []KafkaConfig  `json:"kafkaConfigs"`
+	PubSubConfigs  []PubSubConfig  `json:"pubsubConfigs"`
+	KafkaConfigs   []KafkaConfig   `json:"kafkaConfigs"`
+	SpannerConfigs []SpannerConfig `json:"spannerConfigs"`
 }
 
 var (
@@ -56,6 +65,15 @@ func Load() error {
 						Topic:          "unica.marketing.response.events",
 						ConsumerGroup:  "cloudevents-explorer",
 						SchemaRegistry: "http://localhost:18081",
+					},
+				},
+				SpannerConfigs: []SpannerConfig{
+					{
+						Name:         "TMS Local",
+						EmulatorHost: "localhost:9010",
+						ProjectID:    "tms-suncorp-local",
+						InstanceID:   "tms-suncorp-local",
+						DatabaseID:   "tms-suncorp-db",
 					},
 				},
 			}
@@ -117,6 +135,24 @@ func AddOrUpdateKafkaConfig(newConfig KafkaConfig) error {
 	}
 	if !found {
 		config.KafkaConfigs = append(config.KafkaConfigs, newConfig)
+	}
+	mu.Unlock()
+
+	return Save()
+}
+
+func AddOrUpdateSpannerConfig(newConfig SpannerConfig) error {
+	mu.Lock()
+	found := false
+	for i, cfg := range config.SpannerConfigs {
+		if cfg.Name == newConfig.Name {
+			config.SpannerConfigs[i] = newConfig
+			found = true
+			break
+		}
+	}
+	if !found {
+		config.SpannerConfigs = append(config.SpannerConfigs, newConfig)
 	}
 	mu.Unlock()
 
