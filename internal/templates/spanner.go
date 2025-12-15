@@ -69,7 +69,7 @@ const SpannerContent = `
     <!-- Main Content Area -->
     <div style="display: flex; flex-direction: column; gap: 16px; height: 100%;">
         <!-- SQL Editor -->
-        <div class="panel" style="flex: 1; min-height: 250px; display: flex; flex-direction: column;">
+        <div class="panel" style="min-height: 250px; max-height: 250px; display: flex; flex-direction: column;">
             <div class="panel-header" style="flex-shrink: 0;">
                 <div class="panel-title">SQL Editor</div>
             </div>
