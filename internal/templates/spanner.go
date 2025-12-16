@@ -6,10 +6,11 @@ const SpannerContent = `
 </div>
 
 <div class="panel">
-    <div class="panel-header">
+    <div class="panel-header" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;" onclick="toggleConnectionSettings()">
         <div class="panel-title">Connection Settings</div>
+        <span id="connectionToggleIcon" style="color: #5f6368; font-size: 12px;">▼</span>
     </div>
-    <div class="panel-body">
+    <div class="panel-body" id="connectionSettingsBody">
         <div class="form-row">
             <div class="form-group">
                 <label for="configSelect">Configuration Profile</label>
@@ -118,6 +119,27 @@ let currentConfig = {};
 let allTables = [];
 let selectedTable = '';
 
+// Toggle connection settings panel
+function toggleConnectionSettings() {
+    const body = document.getElementById('connectionSettingsBody');
+    const icon = document.getElementById('connectionToggleIcon');
+
+    if (body.style.display === 'none') {
+        body.style.display = 'block';
+        icon.textContent = '▼';
+    } else {
+        body.style.display = 'none';
+        icon.textContent = '▶';
+    }
+}
+
+function collapseConnectionSettings() {
+    const body = document.getElementById('connectionSettingsBody');
+    const icon = document.getElementById('connectionToggleIcon');
+    body.style.display = 'none';
+    icon.textContent = '▶';
+}
+
 // Load configurations on page load
 async function loadConfigurations() {
     try {
@@ -221,6 +243,10 @@ async function testConnection() {
             showStatus('Connection successful!');
             // Auto-load tables on successful connection
             loadTables();
+            // Collapse connection settings to show query editor and results
+            setTimeout(() => {
+                collapseConnectionSettings();
+            }, 800);
         } else {
             statusDiv.style.background = '#fce8e6';
             statusDiv.style.color = '#d93025';
