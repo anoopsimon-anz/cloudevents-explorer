@@ -81,11 +81,11 @@ const SpannerContent = `
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <textarea id="sqlQuery"
                               style="height: 150px; width: 100%; font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
-                                     font-size: 13px; resize: none; padding: 12px; box-sizing: border-box;"
+                                     font-size: 13px; resize: none; padding: 10px; box-sizing: border-box; border: 1px solid #dadce0; border-radius: 3px;"
                               placeholder="-- Enter SQL query here&#10;SELECT * FROM TableName LIMIT 10;"></textarea>
                     <div class="button-group">
                         <button class="btn-primary" onclick="executeQuery()">Run Query</button>
-                        <select id="exampleQueries" onchange="loadExampleQuery()" style="padding: 8px 12px;">
+                        <select id="exampleQueries" onchange="loadExampleQuery()" style="padding: 6px 10px;">
                             <option value="">-- Example Queries --</option>
                             <option value="SHOW_TABLES">Show all tables</option>
                             <option value="SELECT_ALL">SELECT * FROM (selected table)</option>
@@ -426,28 +426,27 @@ async function executeQuery() {
 function renderResultsTable(columns, rows) {
     const resultsDiv = document.getElementById('queryResults');
 
-    let html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+    let html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px; background: white;">';
 
     // Header
-    html += '<thead><tr style="background: #f8f9fa;">';
+    html += '<thead><tr style="background: #f8f9fa; border-bottom: 2px solid #dadce0;">';
     columns.forEach(col => {
-        html += '<th style="padding: 12px; text-align: left; font-weight: 600; color: #5f6368; border: 1px solid #dadce0;">' + col + '</th>';
+        html += '<th style="padding: 8px 12px; text-align: left; font-weight: 500; color: #5f6368; border: 1px solid #dadce0; font-size: 12px; text-transform: none;">' + col + '</th>';
     });
     html += '</tr></thead>';
 
     // Rows
     html += '<tbody>';
     rows.forEach((row, idx) => {
-        const bgColor = idx % 2 === 0 ? 'white' : '#f8f9fa';
-        html += '<tr style="background: ' + bgColor + ';">';
+        html += '<tr style="background: white; border-bottom: 1px solid #e0e0e0;">';
         columns.forEach(col => {
             let value = row[col];
             if (value === null || value === undefined) {
-                value = '<span style="color: #5f6368; font-style: italic;">NULL</span>';
+                value = '<span style="color: #9e9e9e; font-style: italic;">NULL</span>';
             } else if (typeof value === 'object') {
                 value = JSON.stringify(value);
             }
-            html += '<td style="padding: 10px; color: #202124; border: 1px solid #dadce0;">' + value + '</td>';
+            html += '<td style="padding: 6px 12px; color: #424242; border: 1px solid #e0e0e0; font-size: 13px; line-height: 1.4;">' + value + '</td>';
         });
         html += '</tr>';
     });
@@ -498,39 +497,39 @@ func GetSpannerHTML() string {
             transition: background 0.2s;
         }
         .back-btn:hover { background: #f1f3f4; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        .panel { background: white; border: 1px solid #dadce0; border-radius: 8px; margin-bottom: 16px; }
-        .panel-header { padding: 16px 20px; border-bottom: 1px solid #dadce0; }
-        .panel-title { font-size: 14px; font-weight: 500; color: #5f6368; text-transform: uppercase; letter-spacing: 0.5px; }
-        .panel-body { padding: 20px; }
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px; }
-        .form-group { display: flex; flex-direction: column; gap: 6px; }
-        label { font-size: 13px; color: #5f6368; font-weight: 500; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 16px; }
+        .panel { background: white; border: 1px solid #dadce0; border-radius: 4px; margin-bottom: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .panel-header { padding: 10px 16px; border-bottom: 1px solid #e0e0e0; background: #fafafa; }
+        .panel-title { font-size: 13px; font-weight: 500; color: #5f6368; }
+        .panel-body { padding: 16px; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 12px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        label { font-size: 12px; color: #5f6368; font-weight: 500; }
         input, select {
             background: white;
             border: 1px solid #dadce0;
-            color: #202124;
-            padding: 8px 12px;
-            border-radius: 4px;
-            font-size: 14px;
+            color: #424242;
+            padding: 6px 10px;
+            border-radius: 3px;
+            font-size: 13px;
         }
         input:focus, select:focus { outline: none; border-color: #1a73e8; box-shadow: 0 0 0 1px #1a73e8; }
         .button-group { display: flex; gap: 8px; flex-wrap: wrap; }
         button {
-            padding: 8px 16px;
+            padding: 6px 14px;
             border: 1px solid #dadce0;
-            border-radius: 4px;
-            font-size: 14px;
+            border-radius: 3px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
             background: white;
-            color: #202124;
+            color: #424242;
         }
         .btn-primary { background: #1a73e8; color: white; border-color: #1a73e8; }
-        .btn-primary:hover { background: #1765cc; }
+        .btn-primary:hover { background: #1557b0; }
         .btn-secondary { background: white; color: #5f6368; }
-        .btn-secondary:hover { background: #f1f3f4; }
+        .btn-secondary:hover { background: #f5f5f5; }
         .status-toast {
             position: fixed;
             top: 80px;
