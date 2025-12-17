@@ -24,27 +24,5 @@
       "instanceId": "tms-suncorp-local",
       "databaseId": "tms-suncorp-db"
     }
-  ],
-  "savedRequests": [
-    {
-      "name": "test",
-      "method": "GET",
-      "url": "http://localhost:8888/api/configs",
-      "headers": {
-        "Content-Type": "application/json"
-      },
-      "parameters": {},
-      "body": ""
-    },
-    {
-      "name": "dfgdfg",
-      "method": "GET",
-      "url": "http://localhost:8888/api/configs",
-      "headers": {
-        "Content-Type": "application/json"
-      },
-      "parameters": {},
-      "body": ""
-    }
   ]
 }
